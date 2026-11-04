@@ -1,0 +1,1 @@
+# Nema vanjskih ovisnosti - server koristi samo Python standardnu biblioteku (Python 3.9+).

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: burzovni-terminal
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 server.py
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: PERSIST
+        value: "0"            # na Renderu se ne zapisuje portfolio.json (disk je privremen)
+      - key: PORTFOLIO_URL    # raw GitHub URL, npr. https://raw.githubusercontent.com/<korisnik>/<repo>/main/portfolio.json
+        sync: false
+      - key: PORTFOLIO_REFRESH_S
+        value: "600"

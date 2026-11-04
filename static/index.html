@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Burzovni terminal</title>
+<meta name="theme-color" content="#0a0e14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a0f;--panel:#0d1219;--panel2:#111823;--line:#1c2532;--line2:#253041;--tx:#e6edf3;--tx2:#8b98a9;--tx3:#5c6878;--up:#22c55e;--dn:#ef4444;--upbg:rgba(34,197,94,.12);--dnbg:rgba(239,68,68,.12);--acc:#f5a524;--blue:#3b82f6;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--tx2)}.mut3{color:var(--tx3)}
+header{position:sticky;top:0;z-index:20;background:rgba(7,10,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px 18px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.08em;font-size:13px}
+.logo i{width:10px;height:10px;background:var(--acc);transform:rotate(45deg);display:inline-block;box-shadow:0 0 12px var(--acc)}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border:1px solid var(--line2);border-radius:999px;font-size:12px;color:var(--tx2);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--tx3)}
+.dot.live{background:var(--up);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 1.8s infinite}
+.dot.pre{background:var(--acc)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.warn{border-color:rgba(245,165,36,.4);color:var(--acc);font-weight:600;letter-spacing:.03em}
+.sp{flex:1}
+.tape{overflow:hidden;border-top:1px solid var(--line);white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.tape-in{display:inline-flex;gap:28px;padding:7px 0;animation:scroll 60s linear infinite}
+.tape:hover .tape-in{animation-play-state:paused}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk{display:inline-flex;gap:8px;font-size:12.5px;cursor:pointer}.tk b{font-weight:600}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:14px;padding:14px 18px 40px;max-width:1500px;margin:0 auto}
+@media(max-width:1050px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ch{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ch h2{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--tx2);font-weight:600}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:2px}
+.seg button{background:none;border:0;color:var(--tx2);font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer}
+.seg button.on{background:var(--line2);color:var(--tx)}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);font-weight:500;text-align:right;padding:8px 10px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr{transition:background .15s}tbody tr:hover{background:var(--panel2)}
+.wl td.sym{text-align:left}
+.sym b{display:block;font-size:13.5px;letter-spacing:.02em}.sym span{font-size:11.5px;color:var(--tx3)}
+.btn{background:var(--panel2);border:1px solid var(--line2);color:var(--tx);font:inherit;font-size:12px;font-weight:500;padding:5px 10px;border-radius:7px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.chg{display:inline-block;min-width:74px;padding:3px 7px;border-radius:6px;font-weight:600;text-align:right}
+.chg.up{background:var(--upbg)}.chg.dn{background:var(--dnbg)}
+.px{transition:background .8s;border-radius:5px;padding:2px 5px}
+.flash-up{background:rgba(34,197,94,.35)!important;transition:none}.flash-dn{background:rgba(239,68,68,.35)!important;transition:none}
+.rng{position:relative;width:90px;height:4px;background:var(--line2);border-radius:2px;display:inline-block;vertical-align:middle}
+.rng i{position:absolute;top:-3px;width:2px;height:10px;background:var(--tx);border-radius:1px}
+.why{white-space:normal;text-align:left;color:var(--tx2);font-size:12px;max-width:260px}
+.scroll{overflow-x:auto}
+.side{display:flex;flex-direction:column;gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line)}
+.kpi{background:var(--panel);padding:12px 14px}.kpi small{display:block;font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}.kpi div{font-size:19px;font-weight:600;margin-top:3px}
+.pos{padding:12px 14px;border-bottom:1px solid var(--line)}.pos:last-child{border-bottom:0}
+.pos-h{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.pos-h b{font-size:14px}
+.bar{position:relative;height:6px;border-radius:3px;margin:10px 0 4px;background:linear-gradient(90deg,rgba(239,68,68,.55),rgba(255,255,255,.08) 50%,rgba(34,197,94,.55))}
+.bar i{position:absolute;top:-4px;width:3px;height:14px;background:#fff;border-radius:2px;box-shadow:0 0 6px rgba(255,255,255,.6)}
+.bar em{position:absolute;top:-3px;width:1px;height:12px;background:var(--tx2)}
+.bl{display:flex;justify-content:space-between;font-size:11px;color:var(--tx3)}
+.empty{padding:22px 14px;text-align:center;color:var(--tx2)}
+.big{font-size:30px;font-weight:700}
+.note{padding:10px 14px;font-size:12px;color:var(--tx3);border-top:1px solid var(--line)}
+/* drawer */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+.ov.on{opacity:1;pointer-events:auto}
+.dr{position:fixed;top:0;right:0;height:100%;width:min(760px,100%);background:var(--bg);border-left:1px solid var(--line);z-index:50;transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);overflow-y:auto}
+.dr.on{transform:none}
+.dh{position:sticky;top:0;background:rgba(7,10,15,.95);backdrop-filter:blur(8px);padding:14px 18px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;z-index:2}
+.dh h3{margin:0;font-size:20px}.x{margin-left:auto;font-size:20px;line-height:1;background:none;border:1px solid var(--line2);color:var(--tx2);border-radius:8px;width:34px;height:34px;cursor:pointer}
+.db{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.chartbox{position:relative;height:300px}
+canvas{display:block;width:100%;height:100%}
+.tip{position:absolute;pointer-events:none;background:var(--panel2);border:1px solid var(--line2);border-radius:6px;padding:4px 8px;font-size:12px;display:none;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line)}
+.f{background:var(--panel);padding:10px 12px}.f small{display:block;font-size:11px;color:var(--tx3)}.f b{font-weight:600}
+ul.l{margin:0;padding:12px 14px 12px 30px}ul.l li{margin:4px 0}
+.bb{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:600px){.bb{grid-template-columns:1fr}}
+.bb .card h4{margin:0;padding:10px 14px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--line)}
+.news a{display:block;padding:10px 14px;border-bottom:1px solid var(--line);text-decoration:none}.news a:hover{background:var(--panel2)}
+.news a small{display:block;color:var(--tx3);font-size:11.5px;margin-top:2px}
+.epsb{display:flex;gap:10px;padding:12px 14px;flex-wrap:wrap}
+.epsb div{flex:1;min-width:110px;background:var(--panel2);border-radius:8px;padding:8px 10px;font-size:12px}
+footer{padding:0 18px 30px;max-width:1500px;margin:0 auto;color:var(--tx3);font-size:12px}
+@media(max-width:640px){.top{padding:10px 12px}main{padding:12px 10px 30px}.hide-s{display:none}td,th{padding:8px 7px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo"><i></i>BURZOVNI TERMINAL</div>
+    <span class="pill" id="mkt"><span class="dot"></span><span>Učitavanje…</span></span>
+    <span class="pill mono" id="upd">—</span>
+    <span class="sp"></span>
+    <span class="pill warn">SIMULACIJA · NIJE FINANCIJSKI SAVJET</span>
+  </div>
+  <div class="tape"><div class="tape-in mono" id="tape"></div></div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="ch"><h2>Watchlista</h2><span class="sp"></span>
+      <div class="seg" id="sort">
+        <button data-k="izbor" class="on">Moj izbor</button><button data-k="dan">Dnevna promjena</button><button data-k="pe">P/E</button><button data-k="vrh">Od vrha</button>
+      </div>
+    </div>
+    <div class="scroll"><table class="wl">
+      <thead><tr><th>Dionica</th><th class="hide-s">Danas</th><th>Cijena</th><th>Promjena</th><th class="hide-s">52 tj.</th><th class="hide-s">P/E</th><th class="hide-s">Tržišna kap.</th><th></th></tr></thead>
+      <tbody id="wl"></tbody>
+    </table></div>
+  </section>
+
+  <div class="side">
+    <section class="card">
+      <div class="ch"><h2>Simulirani portfelj</h2><span class="sp"></span><span class="mut3" style="font-size:12px">virtualnih 10.000 $</span></div>
+      <div class="kpis" id="kpis"></div>
+      <div id="pos"></div>
+      <div class="note">Paper trading: trejdovi nisu stvarni. Server sam zatvara poziciju kad cijena dotakne SL ili TP (izlaz na toj razini).</div>
+    </section>
+    <section class="card">
+      <div class="ch"><h2>Tjedna uspješnost</h2></div>
+      <div id="weekly"></div>
+    </section>
+  </div>
+</main>
+<footer>Podaci: Yahoo Finance (mogu kasniti do ~15 s). Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.</footer>
+
+<div class="ov" id="ov"></div>
+<aside class="dr" id="dr">
+  <div class="dh"><div><h3 id="dT">—</h3><div class="mut" id="dS"></div></div><div style="text-align:right;margin-left:auto"><div class="big mono" id="dP">—</div><div class="mono" id="dC"></div></div><button class="x" id="x">×</button></div>
+  <div class="db">
+    <div class="card">
+      <div class="ch"><h2>Graf cijene</h2><span class="sp"></span>
+        <div class="seg" id="rng"><button data-r="1d" class="on">1D</button><button data-r="5d">5D</button><button data-r="1mo">1M</button><button data-r="6mo">6M</button><button data-r="1y">1G</button></div>
+      </div>
+      <div style="padding:10px 6px 6px"><div class="chartbox"><canvas id="cv"></canvas><div class="tip mono" id="tip"></div></div></div>
+    </div>
+    <div class="card"><div class="ch"><h2>O tvrtki</h2></div><div style="padding:12px 14px" id="dDesc" class="mut"></div></div>
+    <div class="card"><div class="ch"><h2>Ključni pokazatelji</h2></div><div class="grid2" id="dFund"></div></div>
+    <div class="card"><div class="ch"><h2 id="dErH">Zadnji izvještaj</h2></div><div id="dEr"></div></div>
+    <div class="bb">
+      <div class="card"><h4 class="up">Bull – zašto može rasti</h4><ul class="l" id="dPro"></ul></div>
+      <div class="card"><h4 class="dn">Bear – rizici</h4><ul class="l" id="dCon"></ul></div>
+    </div>
+    <div class="card news"><div class="ch"><h2>Vijesti</h2></div><div id="dNews"></div></div>
+  </div>
+</aside>
+
+<script>
+const TZ='Europe/Zagreb';
+const $=s=>document.querySelector(s);
+const nf=(v,d=2)=>v==null||isNaN(v)?'—':Number(v).toLocaleString('hr-HR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=(v,d=2)=>v==null?'—':nf(v,d)+' $';
+const pct=v=>v==null?'—':(v>0?'+':'')+nf(v,2)+'%';
+const sgn=v=>v>0?'up':v<0?'dn':'';
+const cap=v=>!v?'—':v>=1e12?nf(v/1e12,2)+' bil. $':nf(v/1e9,0)+' mlrd. $';
+const tfmt=(ts,o)=>new Intl.DateTimeFormat('hr-HR',Object.assign({timeZone:TZ},o)).format(new Date(ts*1000));
+let S=null,prev={},sortK='izbor',timer=null,cur=null,curR='1d';
+const MS={REGULAR:['Tržište otvoreno','live'],PRE:['Pre-market','pre'],PREPRE:['Zatvoreno','',],POST:['After-hours','pre'],POSTPOST:['Zatvoreno',''],CLOSED:['Zatvoreno','']};
+
+async function load(){
+  try{
+    const r=await fetch('/api/state',{cache:'no-store'}); if(!r.ok) throw 0; S=await r.json(); render();
+  }catch(e){ $('#upd').textContent='Greška pri osvježavanju – pokušavam ponovno'; }
+  clearTimeout(timer); timer=setTimeout(load, S&&S.marketState==='REGULAR'?12000:60000);
+}
+function q(sym){return S.quotes.find(x=>x.symbol===sym)}
+function spark(c,prevc,w=96,h=30){
+  if(!c||c.length<2) return '';
+  const all=prevc?c.concat([prevc]):c, mn=Math.min(...all), mx=Math.max(...all), rg=mx-mn||1;
+  const p=c.map((v,i)=>`${(i/(c.length-1)*w).toFixed(1)},${(h-2-(v-mn)/rg*(h-4)).toFixed(1)}`).join(' ');
+  const col=c[c.length-1]>=(prevc??c[0])?'#22c55e':'#ef4444';
+  const py=prevc?(h-2-(prevc-mn)/rg*(h-4)).toFixed(1):null;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${py?`<line x1="0" x2="${w}" y1="${py}" y2="${py}" stroke="#5c6878" stroke-dasharray="2 3" stroke-width="1"/>`:''}<polyline fill="none" stroke="${col}" stroke-width="1.6" points="${p}"/></svg>`;
+}
+function render(){
+  const ms=MS[S.marketState]||[S.marketState||'—',''];
+  $('#mkt').innerHTML=`<span class="dot ${ms[1]}"></span><span>${ms[0]}</span>`;
+  $('#upd').textContent='Ažurirano '+tfmt(S.serverTime,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' (Zagreb)';
+  const wl=S.portfolio.watchlist;
+  // tape
+  const items=wl.map(s=>{const x=q(s);if(!x)return'';return `<span class="tk" onclick="openD('${s}')"><b>${s}</b><span>${nf(x.regularMarketPrice)}</span><span class="${sgn(x.regularMarketChangePercent)}">${pct(x.regularMarketChangePercent)}</span></span>`}).join('');
+  $('#tape').innerHTML=items+items;
+  // watchlist
+  let rows=wl.map(s=>q(s)).filter(Boolean);
+  if(sortK==='dan')rows.sort((a,b)=>b.regularMarketChangePercent-a.regularMarketChangePercent);
+  if(sortK==='pe')rows.sort((a,b)=>(a.trailingPE||1e9)-(b.trailingPE||1e9));
+  if(sortK==='vrh')rows.sort((a,b)=>a.regularMarketPrice/a.fiftyTwoWeekHigh-b.regularMarketPrice/b.fiftyTwoWeekHigh);
+  $('#wl').innerHTML=rows.map(x=>{
+    const s=x.symbol,inf=S.info[s]||{},sp=S.spark[s]||{},pos=(x.regularMarketPrice-x.fiftyTwoWeekLow)/(x.fiftyTwoWeekHigh-x.fiftyTwoWeekLow)*100;
+    const ch=x.regularMarketChangePercent;
+    return `<tr><td class="sym"><b>${s}</b><span>${inf.name||x.shortName||''}</span></td>
+    <td class="hide-s">${spark(sp.c,sp.prev)}</td>
+    <td class="mono"><span class="px" id="px-${s}">${nf(x.regularMarketPrice)}</span></td>
+    <td class="mono"><span class="chg ${sgn(ch)}">${pct(ch)}</span></td>
+    <td class="hide-s"><span class="rng" title="${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}"><i style="left:${Math.max(0,Math.min(100,pos))}%"></i></span></td>
+    <td class="mono hide-s">${x.trailingPE?nf(x.trailingPE,1):'—'}</td>
+    <td class="mono hide-s">${cap(x.marketCap)}</td>
+    <td><button class="btn" onclick="openD('${s}')">Detalji</button></td></tr>`}).join('');
+  // flash
+  rows.forEach(x=>{const p=prev[x.symbol],el=$('#px-'+x.symbol);if(p!=null&&el&&p!==x.regularMarketPrice){const c=x.regularMarketPrice>p?'flash-up':'flash-dn';el.classList.add(c);setTimeout(()=>el.classList.remove(c),60)}prev[x.symbol]=x.regularMarketPrice});
+  renderPf();
+  if(cur) hdr(cur);
+}
+function renderPf(){
+  const P=S.portfolio,T=P.trades||[],open=T.filter(t=>t.status==='open'),closed=T.filter(t=>t.status==='closed');
+  let mv=0,upl=0;
+  open.forEach(t=>{const x=q(t.ticker),px=x?x.regularMarketPrice:t.entry_price;mv+=px*t.shares;upl+=(px-t.entry_price)*t.shares});
+  const rpl=closed.reduce((a,t)=>a+(t.pnl_usd||0),0),tot=P.cash+mv,start=P.starting_capital||10000;
+  $('#kpis').innerHTML=[['Ukupna vrijednost',`<span class="mono">${usd(tot)}</span> <small class="${sgn(tot-start)}" style="display:inline;font-size:12px">${pct((tot/start-1)*100)}</small>`],
+   ['Gotovina',`<span class="mono">${usd(P.cash)}</span>`],['Otvoreni P&L',`<span class="mono ${sgn(upl)}">${upl>=0?'+':''}${usd(upl)}</span>`],['Realizirani P&L',`<span class="mono ${sgn(rpl)}">${rpl>=0?'+':''}${usd(rpl)}</span>`]]
+   .map(k=>`<div class="kpi"><small>${k[0]}</small><div>${k[1]}</div></div>`).join('');
+  $('#pos').innerHTML=open.length?open.map(t=>{
+    const x=q(t.ticker),px=x?x.regularMarketPrice:t.entry_price,pl=(px-t.entry_price)*t.shares,plp=(px/t.entry_price-1)*100;
+    const rg=t.take_profit-t.stop_loss,at=Math.max(0,Math.min(100,(px-t.stop_loss)/rg*100)),en=(t.entry_price-t.stop_loss)/rg*100;
+    return `<div class="pos"><div class="pos-h"><b>${t.ticker}</b><span class="mut">Long · ${t.shares} kom. @ ${nf(t.entry_price)}</span><span class="sp"></span>
+      <span class="mono ${sgn(pl)}" style="font-weight:600">${pl>=0?'+':''}${usd(pl)} (${pct(plp)})</span></div>
+      <div class="bar"><em style="left:${en}%" title="ulaz"></em><i style="left:calc(${at}% - 1px)"></i></div>
+      <div class="bl mono"><span>SL ${nf(t.stop_loss)} · ${pct((t.stop_loss/px-1)*100)}</span><span>sad ${nf(px)}</span><span>TP ${nf(t.take_profit)} · ${pct((t.take_profit/px-1)*100)}</span></div>
+      ${t.rationale?`<div class="mut3" style="font-size:12px;margin-top:6px">${t.rationale}</div>`:''}</div>`}).join(''):'<div class="empty">Nema otvorenih pozicija.</div>';
+  // weekly
+  const wins=closed.filter(t=>(t.pnl_usd||0)>0).length,wr=closed.length?wins/closed.length*100:null;
+  let html=`<div class="kpis"><div class="kpi"><small>Win rate</small><div class="mono">${wr==null?'—':nf(wr,0)+'%'}</div></div><div class="kpi"><small>Zatvoreni trejdovi</small><div class="mono">${closed.length} <span class="mut3" style="font-size:13px">(${wins} W / ${closed.length-wins} L)</span></div></div></div>`;
+  if(!closed.length) html+=`<div class="empty">Tjedan 1 (04.–06.11.2026.) je u tijeku – još nema zatvorenih trejdova.<br><span class="mut3">Prvi tjedni izvještaj stiže nakon zatvaranja burze u petak.</span></div>`;
+  else html+=`<div class="scroll"><table><thead><tr><th>Dionica</th><th>Ulaz</th><th>Izlaz</th><th>Razlog</th><th>P&L</th></tr></thead><tbody>${closed.map(t=>`<tr><td><b>${t.ticker}</b> <span class="mut3">${t.exit_date||''}${t._mem?' · privremeno':''}</span></td><td class="mono">${nf(t.entry_price)}</td><td class="mono">${nf(t.exit_price)}</td><td>${t.exit_reason==='TP'?'<span class="up">TP</span>':t.exit_reason==='SL'?'<span class="dn">SL</span>':(t.exit_reason||'')}</td><td class="mono ${sgn(t.pnl_usd)}">${usd(t.pnl_usd)}</td></tr>`).join('')}</tbody></table></div>`;
+  if(closed.some(t=>t._mem))html+=`<div class="note">„privremeno“ = SL/TP dotaknut uživo; službeno zatvaranje upisuje tjedna rutina.</div>`;
+  (P.weekly_reports||[]).slice().reverse().forEach(w=>{html+=`<div class="note"><b style="color:var(--tx)">${w.week||w.label||''}</b> · win rate ${w.win_rate!=null?nf(w.win_rate,0)+'%':'—'} · P&L ${usd(w.pnl_usd)}${w.summary?' · '+w.summary:''}</div>`});
+  $('#weekly').innerHTML=html;
+}
+// ---- detail drawer ----
+function hdr(s){const x=q(s);if(!x)return;$('#dP').textContent=nf(x.regularMarketPrice);const c=x.regularMarketChangePercent;$('#dC').innerHTML=`<span class="${sgn(c)}">${x.regularMarketChange>0?'+':''}${nf(x.regularMarketChange)} (${pct(c)})</span>`;}
+async function openD(s){
+  cur=s;$('#ov').classList.add('on');$('#dr').classList.add('on');$('#dr').scrollTop=0;
+  const inf=(S.info[s]||{});$('#dT').textContent=`${s} · ${inf.name||''}`;$('#dS').textContent='';hdr(s);
+  ['#dDesc','#dFund','#dEr','#dPro','#dCon','#dNews'].forEach(k=>$(k).innerHTML='<div class="mut3" style="padding:10px 14px">Učitavanje…</div>');
+  drawChart(s,curR);
+  try{const d=await (await fetch('/api/detail?s='+s)).json(); if(cur!==s)return; fillD(s,d);}catch(e){$('#dDesc').textContent='Detalji trenutno nisu dostupni.'}
+}
+function closeD(){cur=null;$('#ov').classList.remove('on');$('#dr').classList.remove('on')}
+$('#x').onclick=closeD;$('#ov').onclick=closeD;document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
+function fillD(s,d){
+  const I=d.info||{},F=d.fund||{},x=q(s)||{},fc=F.financialCurrency==='EUR'?'€':'$';
+  $('#dS').textContent=I.sector||[F.sector,F.industry].filter(Boolean).join(' · ');
+  $('#dDesc').innerHTML=(I.desc||'')+(I.why?`<div style="margin-top:8px;color:var(--acc)">▸ ${I.why}</div>`:'');
+  const big=v=>v==null?'—':Math.abs(v)>=1e12?nf(v/1e12,2)+' bil.':nf(v/1e9,1)+' mlrd.';
+  const f=[['Tržišna kap.',cap(x.marketCap)],['P/E',x.trailingPE?nf(x.trailingPE,1):'—'],['Fwd P/E',x.forwardPE?nf(x.forwardPE,1):'—'],['EPS (12 mj.)',usd(x.epsTrailingTwelveMonths)],
+   ['Raspon dana',`${nf(x.regularMarketDayLow)} – ${nf(x.regularMarketDayHigh)}`],['52 tjedna',`${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}`],['Od 52-tj. vrha',pct((x.regularMarketPrice/x.fiftyTwoWeekHigh-1)*100)],
+   ['SMA50 / SMA200',`${nf(x.fiftyDayAverage)} / ${nf(x.twoHundredDayAverage)}`],['Prihod (12 mj.)',big(F.revenue)+' '+fc],['Rast prihoda',F.revenueGrowth!=null?pct(F.revenueGrowth*100):'—'],
+   ['Bruto marža',F.grossMargins?nf(F.grossMargins*100,1)+'%':'—'],['Operativna marža',F.operatingMargins!=null?nf(F.operatingMargins*100,1)+'%':'—'],['Neto marža',F.profitMargins!=null?nf(F.profitMargins*100,1)+'%':'—'],
+   ['ROE',F.roe!=null?nf(F.roe*100,1)+'%':'—'],['Beta',F.beta!=null?nf(F.beta,2):'—'],['Dividenda',F.dividendYield?nf(F.dividendYield*100,2)+'%':'—'],
+   ['Cilj analitičara',F.targetMeanPrice?`${usd(F.targetMeanPrice)} (${pct((F.targetMeanPrice/x.regularMarketPrice-1)*100)})`:'—'],['Preporuka',F.recommendationKey?`${F.recommendationKey.replace('_',' ')} · ${F.analysts||'?'} anal.`:'—'],
+   ['Volumen',x.regularMarketVolume?nf(x.regularMarketVolume/1e6,1)+' mil.':'—']];
+  $('#dFund').innerHTML=f.map(a=>`<div class="f"><small>${a[0]}</small><b class="mono">${a[1]}</b></div>`).join('');
+  const er=I.er;
+  $('#dErH').textContent=er?`Zadnji izvještaj · ${er.period}`:'Zadnji izvještaj';
+  $('#dEr').innerHTML=(er?`<div style="padding:12px 14px 0" class="mut">Objavljen ${er.date}${er.next?` · sljedeći ${er.next}`:(d.nextEarnings&&d.nextEarnings.length?` · sljedeći ${d.nextEarnings[0]}`:'')}</div>
+    <ul class="l">${er.items.map(i=>`<li>${i}</li>`).join('')}</ul><div style="padding:0 14px 12px"><b style="color:var(--acc)">Vodstvo:</b> <span class="mut">${er.guide}</span></div>`:'')+
+    (d.eps&&d.eps.length?`<div class="mut3" style="padding:0 14px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">EPS stvarno vs procjena (zadnja 4 kvartala)</div><div class="epsb">${d.eps.map(e=>`<div><span class="mut3">${e.q||''}</span><br><b class="mono">${nf(e.act)}</b> <span class="mut3 mono">vs ${nf(e.est)}</span><br><span class="mono ${sgn(e.surp)}">${e.surp!=null?pct(e.surp*100):''}</span></div>`).join('')}</div>`:'');
+  $('#dPro').innerHTML=(I.pros||[]).map(p=>`<li>${p}</li>`).join('');$('#dCon').innerHTML=(I.cons||[]).map(p=>`<li>${p}</li>`).join('');
+  const nn=(I.news||[]).map(n=>({title:n[0],site:n[1],date:n[2],href:n[3]})).concat((d.news||[]).map(n=>({title:n.title,site:n.site,date:n.ts?tfmt(n.ts,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'',href:n.href})));
+  const seen=new Set();$('#dNews').innerHTML=nn.filter(n=>!seen.has(n.href)&&seen.add(n.href)).slice(0,10).map(n=>`<a href="${n.href}" target="_blank" rel="noopener">${n.title}<small>${n.site||''} · ${n.date}</small></a>`).join('')||'<div class="empty">Nema vijesti.</div>';
+}
+// ---- chart ----
+let CD=null;
+async function drawChart(s,r){
+  curR=r;document.querySelectorAll('#rng button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+  try{const d=await (await fetch(`/api/chart?s=${s}&r=${r}`)).json(); if(cur!==s)return; CD=d; paint();}catch(e){}
+}
+document.querySelectorAll('#rng button').forEach(b=>b.onclick=()=>cur&&drawChart(cur,b.dataset.r));
+function paint(hx){
+  const cv=$('#cv'),box=cv.parentElement,dpr=devicePixelRatio||1,W=box.clientWidth,H=box.clientHeight;
+  cv.width=W*dpr;cv.height=H*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);g.clearRect(0,0,W,H);
+  if(!CD||!CD.points.length)return;
+  const P=CD.points,v=P.map(p=>p[1]),base=CD.range==='1d'&&CD.prev?CD.prev:v[0];
+  let mn=Math.min(...v,CD.range==='1d'&&CD.prev?CD.prev:Infinity),mx=Math.max(...v,CD.range==='1d'&&CD.prev?CD.prev:-Infinity);const pad=(mx-mn)*.08||1;mn-=pad;mx+=pad;
+  const L=8,R=58,T=10,B=24,cw=W-L-R,chh=H-T-B,X=i=>L+i/(P.length-1||1)*cw,Y=y=>T+(1-(y-mn)/(mx-mn))*chh;
+  const up=v[v.length-1]>=base,col=up?'#22c55e':'#ef4444';
+  g.font='11px JetBrains Mono, monospace';g.fillStyle='#5c6878';g.strokeStyle='#1c2532';g.lineWidth=1;
+  for(let i=0;i<=4;i++){const yv=mn+(mx-mn)*i/4,y=Y(yv);g.beginPath();g.moveTo(L,y);g.lineTo(W-R,y);g.stroke();g.fillText(nf(yv,yv>1000?0:2),W-R+6,y+4)}
+  const intr=['1d','5d','1mo'].includes(CD.range),lab=t=>tfmt(t,CD.range==='1d'?{hour:'2-digit',minute:'2-digit'}:intr?{day:'2-digit',month:'2-digit'}:{day:'2-digit',month:'2-digit',year:'2-digit'});
+  const nt=Math.min(5,P.length);for(let i=0;i<nt;i++){const k=Math.round(i*(P.length-1)/(nt-1||1));const tx=X(k);g.textAlign=i===0?'left':i===nt-1?'right':'center';g.fillText(lab(P[k][0]),tx,H-6)}g.textAlign='left';
+  if(CD.range==='1d'&&CD.prev){g.setLineDash([3,4]);g.strokeStyle='#5c6878';g.beginPath();g.moveTo(L,Y(CD.prev));g.lineTo(W-R,Y(CD.prev));g.stroke();g.setLineDash([])}
+  const gr=g.createLinearGradient(0,T,0,T+chh);gr.addColorStop(0,up?'rgba(34,197,94,.28)':'rgba(239,68,68,.28)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.beginPath();P.forEach((p,i)=>i?g.lineTo(X(i),Y(p[1])):g.moveTo(X(i),Y(p[1])));g.lineTo(X(P.length-1),T+chh);g.lineTo(X(0),T+chh);g.closePath();g.fillStyle=gr;g.fill();
+  g.beginPath();P.forEach((p,i)=>i?g.lineTo(X(i),Y(p[1])):g.moveTo(X(i),Y(p[1])));g.strokeStyle=col;g.lineWidth=1.8;g.stroke();
+  const ly=Y(v[v.length-1]);g.fillStyle=col;g.fillRect(W-R+2,ly-9,R-4,18);g.fillStyle='#000';g.fillText(nf(v[v.length-1],v[v.length-1]>1000?0:2),W-R+6,ly+4);
+  const tip=$('#tip');
+  if(hx!=null){const i=Math.max(0,Math.min(P.length-1,Math.round((hx-L)/cw*(P.length-1))));const px=X(i),py=Y(P[i][1]);
+    g.strokeStyle='#5c6878';g.setLineDash([2,3]);g.beginPath();g.moveTo(px,T);g.lineTo(px,T+chh);g.moveTo(L,py);g.lineTo(W-R,py);g.stroke();g.setLineDash([]);
+    g.fillStyle=col;g.beginPath();g.arc(px,py,4,0,7);g.fill();
+    const ch=(P[i][1]/base-1)*100;tip.style.display='block';tip.innerHTML=`${tfmt(P[i][0],intr?{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}:{day:'2-digit',month:'2-digit',year:'numeric'})} · <b>${nf(P[i][1])}</b> <span class="${sgn(ch)}">${pct(ch)}</span>`;
+    tip.style.left=Math.min(W-tip.offsetWidth-4,Math.max(4,px-tip.offsetWidth/2))+'px';tip.style.top='4px';} else tip.style.display='none';
+}
+const cvs=$('#cv');const mv=e=>{const r=cvs.getBoundingClientRect(),cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;paint(cx)};
+cvs.addEventListener('mousemove',mv);cvs.addEventListener('touchmove',mv,{passive:true});cvs.addEventListener('mouseleave',()=>paint());addEventListener('resize',()=>cur&&paint());
+setInterval(()=>{if(cur&&curR==='1d'&&S&&S.marketState==='REGULAR')drawChart(cur,'1d')},30000);
+document.querySelectorAll('#sort button').forEach(b=>b.onclick=()=>{sortK=b.dataset.k;document.querySelectorAll('#sort button').forEach(x=>x.classList.toggle('on',x===b));render()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+load();
+</script>
+</body>
+</html>

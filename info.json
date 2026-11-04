@@ -1,0 +1,459 @@
+{
+ "MSFT": {
+  "name": "Microsoft",
+  "sector": "Tehnologija · softver/cloud",
+  "cur": "$",
+  "why": "Novi rekord nakon izvještaja: Azure +48%, vodstvo za Azure 49–50%.",
+  "desc": "Softver (Windows, Microsoft 365, Dynamics), cloud platforma Azure, LinkedIn i Xbox. Najveći dobitnik AI potražnje među softverašima kroz Azure i Copilot.",
+  "er": {
+   "date": "28.10.2026.",
+   "period": "Q1 fiskalne 2027.",
+   "items": [
+    "Prihod 92,3 mlrd $ (+19% g/g), iznad očekivanja",
+    "Non-GAAP EPS 4,89 $ vs konsenzus 4,72 $",
+    "Azure 33,17 mlrd $ (+48%); Microsoft Cloud 63,9 mlrd $ (+30%)",
+    "Ugovorene buduće obveze (RPO) 677 mlrd $ (+73%)"
+   ],
+   "guide": "Q2: prihod 96,0–97,1 mlrd $, Azure +49–50% (konstantna valuta); potražnja i dalje veća od kapaciteta. Slobodni novčani tok pao 27% g/g.",
+   "next": "27.01.2027."
+  },
+  "news": [
+   [
+    "Microsoft Soars 7% to Record, Apple and Amazon Up 7% After Democratic Midterm Sweep",
+    "TIKR / Yahoo Finance",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/microsoft-soars-7-record-apple-165414833.html"
+   ],
+   [
+    "Microsoft Q1 FY27 earnings report",
+    "CNBC",
+    "28.10.2026.",
+    "https://www.cnbc.com/2026/10/28/microsoft-msft-q1-earnings-report-2027.html"
+   ]
+  ],
+  "pros": [
+   "Azure ubrzava (42% → 48%) i vodstvo je još jače",
+   "Backlog 677 mlrd $ daje vidljivost godinama",
+   "Dionica na rekordu, trend iznad SMA50 i SMA200"
+  ],
+  "cons": [
+   "Slobodni novčani tok -27% g/g zbog capexa",
+   "Nakon +6,5% u danu moguć kratkoročni povrat",
+   "Windows OEM -27% zbog slabijeg PC tržišta"
+  ]
+ },
+ "NVDA": {
+  "name": "NVIDIA",
+  "sector": "Tehnologija · poluvodiči",
+  "cur": "$",
+  "why": "Lider AI čipova, 16% ispod vrha, fwd P/E 12,8; izvještaj 17.11.",
+  "desc": "Grafički i AI akceleratori (Blackwell, Vera Rubin), mrežna oprema i softver (CUDA) za podatkovne centre; manji dio su gaming i radne stanice.",
+  "er": {
+   "date": "26.08.2026.",
+   "period": "Q2 fiskalne 2027.",
+   "items": [
+    "Prihod 96,2 mlrd $ (+106% g/g) vs očekivanih 92,17 mlrd $",
+    "Non-GAAP EPS 2,22 $ vs 2,10 $ očekivano",
+    "Data Center 89,0 mlrd $ (+117%)",
+    "Bruto marža 75,0%"
+   ],
+   "guide": "Q3: prihod 108 mlrd $ ±2% (bez Kine), bruto marža 74%. CFO najavila rast prihoda ~70% u fiskalnoj 2028.",
+   "next": "17.11.2026."
+  },
+  "news": [
+   [
+    "Wall Street rallies after Democrats win Congress; data center stocks slide",
+    "Reuters / Yahoo Finance",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/us-stock-index-futures-steady-083456013.html"
+   ],
+   [
+    "Nvidia Q2 FY27: Huang forecasts 70% fiscal 2028 revenue growth",
+    "CNBC",
+    "26.08.2026.",
+    "https://www.cnbc.com/2026/08/26/nvidia-nvda-earnings-report-q2-2027-live-updates.html"
+   ]
+  ],
+  "pros": [
+   "Rast prihoda >100% g/g uz maržu 75%",
+   "Najjeftinija po fwd P/E među AI liderima",
+   "Prosječni cilj analitičara 327 $"
+  ],
+  "cons": [
+   "Tržište se boji usporavanja AI capexa nakon izbora",
+   "Ispod SMA50, kratkoročni trend dolje",
+   "Izvještaj 17.11. donosi rizik velikog gapa"
+  ]
+ },
+ "AAPL": {
+  "name": "Apple",
+  "sector": "Tehnologija · potrošačka elektronika",
+  "cur": "$",
+  "why": "+6% do blizu rekorda, ali upozorenje na maržu zbog skuplje memorije.",
+  "desc": "iPhone, Mac, iPad, nosivi uređaji i usluge (App Store, iCloud, Apple Pay). Instalirana baza veća od 2,5 milijarde uređaja.",
+  "er": {
+   "date": "02.11.2026.",
+   "period": "Q4 fiskalne 2026.",
+   "items": [
+    "Prihod 114,5 mlrd $ (+12%) vs 113,39 mlrd $ očekivano",
+    "EPS 2,10 $ vs 1,99 $ očekivano",
+    "iPhone 57,6 mlrd $ (+17%), usluge 31,6 mlrd $ (+10%)",
+    "Bruto marža 47,9%"
+   ],
+   "guide": "Q1: prihod +7–10% g/g, usluge +8–9%, bruto marža 45–46% (ispod očekivanja) zbog skuplje memorije i Siri AI.",
+   "next": "28.01.2027."
+  },
+  "news": [
+   [
+    "Apple forecasts margin drop in holiday quarter as rising memory costs bite",
+    "Reuters / Investing.com",
+    "02.11.2026.",
+    "https://www.investing.com/news/stock-market-news/apple-results-beat-wall-street-expectationson-strong-iphone-sales-4992898"
+   ],
+   [
+    "Cramer’s Blue Wave Call: “Apple Winner”",
+    "TIKR / Yahoo Finance",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/cramer-blue-wave-call-apple-175746844.html"
+   ]
+  ],
+  "pros": [
+   "Rekordan iPhone i usluge",
+   "Sporija gradnja podatkovnih centara mogla bi pojeftiniti memoriju",
+   "Otkup dionica 24 mlrd $ u kvartalu"
+  ],
+  "cons": [
+   "P/E ~39 – skupa",
+   "Cijena iznad prosječnog cilja analitičara",
+   "Pritisak na bruto maržu"
+  ]
+ },
+ "AMZN": {
+  "name": "Amazon",
+  "sector": "Potrošački sektor · e-trgovina/cloud",
+  "cur": "$",
+  "why": "AWS ubrzao na +39%, najbrže u gotovo 5 godina.",
+  "desc": "Online trgovina, oglašavanje, Prime i Amazon Web Services, najveći svjetski cloud. Razvija i Amazon Leo te Zoox.",
+  "er": {
+   "date": "29.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Prihod 201,9 mlrd $ (+12%)",
+    "EPS 1,89 $ vs konsenzus 1,96 $",
+    "AWS 46,0 mlrd $ (+39,3%)",
+    "Operativna dobit 28,1 mlrd $, marža 13,9%"
+   ],
+   "guide": "Q4: prihod 240–247 mlrd $, operativna dobit 28,5–33,5 mlrd $; capex 2026 ~220 mlrd $. AWS >40% rasta 2027. i 2028."
+  },
+  "news": [
+   [
+    "Amazon (AMZN) Q3 earnings report 2026",
+    "CNBC",
+    "29.10.2026.",
+    "https://www.cnbc.com/2026/10/29/amazon-amzn-q3-earnings-report-2026.html"
+   ]
+  ],
+  "pros": [
+   "AWS backlog 578 mlrd $",
+   "Prosječni cilj ~327 $",
+   "Rekordna operativna marža"
+  ],
+  "cons": [
+   "Negativan slobodni novčani tok",
+   "Opreznije vodstvo za Q4",
+   "Visoka beta (1,5)"
+  ]
+ },
+ "GOOGL": {
+  "name": "Alphabet",
+  "sector": "Komunikacije · internet",
+  "cur": "$",
+  "why": "Google Cloud +103%, P/E ~15, ~29% ispod vrha.",
+  "desc": "Google pretraživanje, YouTube, Android, Google Cloud (uklj. TPU sustave) i Other Bets (Waymo i dr.).",
+  "er": {
+   "date": "28.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Prihod 127,6 mlrd $ (+25%), ispod očekivanja",
+    "EPS 2,12 $ vs konsenzus 3,01 $",
+    "Google Cloud 30,7 mlrd $ (+103%), backlog 561 mlrd $",
+    "Capex 51,4 mlrd $, FCF -9,1 mlrd $"
+   ],
+   "guide": "Capex 2026: 195–205 mlrd $, značajan rast 2027.; pritisak na cloud marže. Dionica -10% nakon izvještaja."
+  },
+  "news": [
+   [
+    "Alphabet sinks 10% as it holds 2026 capex unchanged",
+    "CNBC",
+    "28.10.2026.",
+    "https://www.cnbc.com/2026/10/28/alphabet-googl-earnings-q3-2026.html"
+   ],
+   [
+    "Alphabet Is Spending $15 Billion On Malaysia Data Centers",
+    "Simply Wall St",
+    "04.11.2026.",
+    "https://finance.yahoo.com/technology/ai/articles/alphabet-googl-spending-15-billion-181005178.html"
+   ]
+  ],
+  "pros": [
+   "Najniži P/E među megacapovima",
+   "Cloud raste >100% uz maržu 36%",
+   "Prosječni cilj ~400 $"
+  ],
+  "cons": [
+   "Negativan FCF, capex >300 mlrd $ u 2027.",
+   "Ispod SMA50 i SMA200",
+   "EPS promašaj u Q3"
+  ]
+ },
+ "MU": {
+  "name": "Micron Technology",
+  "sector": "Tehnologija · memorija",
+  "cur": "$",
+  "why": "Memorijski super-ciklus, ali -36% od vrha i velika volatilnost.",
+  "desc": "DRAM, NAND i HBM memorija za podatkovne centre, mobitele i PC-je. HBM je ključan za AI akceleratore.",
+  "er": {
+   "date": "30.09.2026.",
+   "period": "Q4 fiskalne 2026.",
+   "items": [
+    "Rekordni prihod 54,23 mlrd $",
+    "Non-GAAP EPS 33,42 $ vs 31,82 $",
+    "Bruto marža 87,0%"
+   ],
+   "guide": "Q1 FY27: prihod 61,5 mlrd $ ±1,5 mlrd, marža 86,25%, EPS 38,15 $ ±1,00.",
+   "next": "23.12.2026."
+  },
+  "news": [
+   [
+    "SanDisk Retreats 9%, Micron and Western Digital Fall 7% as Election and Memory Price Worries Weigh",
+    "24/7 Wall St.",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/sandisk-retreats-9-micron-western-160259339.html"
+   ]
+  ],
+  "pros": [
+   "Fwd P/E ~4",
+   "HBM za 2027. ugovoren",
+   "Visok cilj analitičara"
+  ],
+  "cons": [
+   "Ciklička industrija",
+   "Strah od sporije gradnje podatkovnih centara",
+   "Dnevni ATR ~6%"
+  ]
+ },
+ "LLY": {
+  "name": "Eli Lilly",
+  "sector": "Zdravstvo · farmacija",
+  "cur": "$",
+  "why": "Treći put podigao godišnje vodstvo; blizu 52-tj. maksimuma.",
+  "desc": "Farmaceutska tvrtka; ključni lijekovi Mounjaro i Zepbound za dijabetes i pretilost, uz onkologiju i imunologiju.",
+  "er": {
+   "date": "29.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Prihod 24,4 mlrd $ (+39%)",
+    "Prilagođeni EPS 7,48 $ vs 6,35 $",
+    "Mounjaro 10,7 mlrd $, Zepbound 5,35 mlrd $"
+   ],
+   "guide": "Prihod 2026: 91–92 mlrd $ (prije 85–87 mlrd $)."
+  },
+  "news": [
+   [
+    "Lilly reports third-quarter 2026 results, raises full-year guidance",
+    "Eli Lilly IR",
+    "29.10.2026.",
+    "https://investor.lilly.com/news-releases/news-release-details/lilly-reports-third-quarter-2026-financial-results-raises-full"
+   ]
+  ],
+  "pros": [
+   "Rast 39% uz maržu 84%",
+   "Jak momentum",
+   "Niska beta"
+  ],
+  "cons": [
+   "P/E ~46",
+   "Cijena na cilju analitičara",
+   "Konkurencija Novo Nordiska"
+  ]
+ },
+ "JPM": {
+  "name": "JPMorgan Chase",
+  "sector": "Financije · banke",
+  "cur": "$",
+  "why": "Najveća US banka, P/E ~15, dividenda ~2%.",
+  "desc": "Univerzalna banka: stanovništvo, investicijsko i korporativno bankarstvo, trgovanje i upravljanje imovinom.",
+  "er": {
+   "date": "listopad 2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Neto dobit 15,3 mlrd $",
+    "EPS 5,75 $ (bez gubitaka na vrijednosnicama) vs 5,94 $",
+    "Neto kamatni prihod 27,1 mlrd $ (+13%)"
+   ],
+   "guide": "Q4 NII ~28 mlrd $; 2027. ~107 mlrd $ NII bez Markets.",
+   "next": "14.01.2027."
+  },
+  "news": [
+   [
+    "JPMorgan Trading Desk Sees Tech Rebounding After Midterms",
+    "Bloomberg",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/jpmorgan-trading-desk-sees-tech-144533066.html"
+   ]
+  ],
+  "pros": [
+   "Iznad SMA50 i SMA200",
+   "Niska volatilnost",
+   "Rast NII"
+  ],
+  "cons": [
+   "Blagi EPS promašaj",
+   "Regulatorni rizik",
+   "Otpor blizu vrha"
+  ]
+ },
+ "V": {
+  "name": "Visa",
+  "sector": "Financije · plaćanja",
+  "cur": "$",
+  "why": "Na 52-tj. maksimumu; operativna marža 64%.",
+  "desc": "Globalna mreža kartičnih plaćanja (VisaNet): autorizacija, kliring i namira.",
+  "er": {
+   "date": "27.10.2026.",
+   "period": "Q4 fiskalne 2026.",
+   "items": [
+    "Neto prihod 12,14 mlrd $ (+13%)",
+    "Non-GAAP EPS 3,48 $ vs 3,44 $"
+   ],
+   "guide": "Pad nakon izgleda za poticaje klijentima, zatim oporavak; Cantor cilj 500 $.",
+   "next": "26.01.2027."
+  },
+  "news": [
+   [
+    "Visa Slipped on Its Incentives Outlook. Days Later, Cantor Raised Its Target to $500",
+    "TIKR",
+    "04.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/visa-slipped-incentives-outlook-days-135115237.html"
+   ]
+  ],
+  "pros": [
+   "Iznimne marže",
+   "Uzlazni trend",
+   "Niža beta"
+  ],
+  "cons": [
+   "P/E ~35",
+   "Regulacija naknada",
+   "Kratkoročno pretjerana"
+  ]
+ },
+ "XOM": {
+  "name": "ExxonMobil",
+  "sector": "Energija · nafta i plin",
+  "cur": "$",
+  "why": "Energetski hedž, 44. godina rasta dividende.",
+  "desc": "Integrirana naftna kompanija: proizvodnja nafte i plina, rafinerije i kemija.",
+  "er": {
+   "date": "30.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "GAAP dobit 15,4 mlrd $",
+    "Prilagođeni EPS 4,23 $ vs 4,03 $",
+    "FCF 19,1 mlrd $"
+   ],
+   "guide": "Dividenda podignuta 44. godinu zaredom; TD Cowen cilj 193 $.",
+   "next": "29.01.2027."
+  },
+  "news": [
+   [
+    "Physical Oil Just Went From a Bidding War to a Fire Sale",
+    "24/7 Wall St.",
+    "04.11.2026.",
+    "https://finance.yahoo.com/energy/articles/physical-oil-just-went-bidding-160410193.html"
+   ]
+  ],
+  "pros": [
+   "Dividenda ~2,4%",
+   "Niska beta",
+   "Beat EPS-a"
+  ],
+  "cons": [
+   "Cijena nafte pada",
+   "Probijena kratkoročna podrška",
+   "Ciklična dobit"
+  ]
+ },
+ "ASML": {
+  "name": "ASML Holding (ADR)",
+  "sector": "Tehnologija · oprema za čipove (EU)",
+  "cur": "€",
+  "why": "Monopol na EUV litografiju; -25% od vrha.",
+  "desc": "Nizozemski proizvođač litografskih sustava (EUV i DUV). Cijena je ADR na Nasdaqu (USD), financije u EUR.",
+  "er": {
+   "date": "14.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Neto prodaja 11,66 mlrd €",
+    "Neto dobit 4,96 mlrd €",
+    "EPS 11,82 € vs 10,76 €"
+   ],
+   "guide": "Q4: prodaja 14,2–15,2 mlrd €, marža ~57%.",
+   "next": "27.01.2027."
+  },
+  "news": [
+   [
+    "ASML Fell 6% in Intel’s Chip Rout",
+    "TIKR",
+    "02.11.2026.",
+    "https://finance.yahoo.com/markets/stocks/articles/asml-fell-6-intel-chip-130226531.html"
+   ]
+  ],
+  "pros": [
+   "Rast prodaje 55%",
+   "Potražnja > ponuda",
+   "Visok cilj analitičara"
+  ],
+  "cons": [
+   "Trend dolje",
+   "Ovisnost o capexu",
+   "Kina – geopolitika"
+  ]
+ },
+ "SAP": {
+  "name": "SAP SE (ADR)",
+  "sector": "Tehnologija · poslovni softver (EU)",
+  "cur": "€",
+  "why": "Cloud +26%, podignuto vodstvo za 2026.",
+  "desc": "Njemački proizvođač poslovnog softvera (S/4HANA, cloud, Business AI). Cijena je ADR na NYSE (USD).",
+  "er": {
+   "date": "21.10.2026.",
+   "period": "Q3 2026.",
+   "items": [
+    "Prihod 10,27 mlrd €",
+    "Cloud 6,67 mlrd € (+26%)",
+    "Cloud backlog 24,14 mlrd € (+28%)"
+   ],
+   "guide": "2026.: gornji kraj 25,8–26,2 mlrd € cloud prihoda.",
+   "next": "28.01.2027."
+  },
+  "news": [
+   [
+    "SAP hits €10 billion quarterly revenue milestone, lifts 2026 view",
+    "Reuters",
+    "21.10.2026.",
+    "https://www.streetinsider.com/Reuters/Germanys+SAP+hits+%E2%82%AC10+billion+quarterly%C2%A0revenue+milestone%2C+lifts+2026+view/27216767.html"
+   ]
+  ],
+  "pros": [
+   "Ubrzanje clouda",
+   "Iznad SMA50/200",
+   "Cilj ~281 $"
+  ],
+  "cons": [
+   "P/E ~30",
+   "Rizik marži",
+   "Manja likvidnost ADR-a"
+  ]
+ }
+}

@@ -1,0 +1,12 @@
+logs/
+*.log
+*.pid
+__pycache__/
+*.pyc
+*.tmp
+.cache/
+tunnel_url.txt
+cloudflared
+bin/
+.env
+.venv/
