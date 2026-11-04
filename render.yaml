@@ -17,3 +17,5 @@ services:
         sync: false
       - key: PORTFOLIO_REFRESH_S
         value: "600"
+      - key: FINNHUB_API_KEY   # opcionalno; bez kljuca lanac ide Yahoo -> Stooq
+        sync: false

@@ -24,7 +24,15 @@ header{position:sticky;top:0;z-index:20;background:rgba(7,10,15,.92);backdrop-fi
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.6)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .warn{border-color:rgba(245,165,36,.4);color:var(--acc);font-weight:600;letter-spacing:.03em}
 .sp{flex:1}
-.tape{overflow:hidden;border-top:1px solid var(--line);white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.tape{border-top:1px solid var(--line);background:transparent}
+#tvTape{min-height:74px}
+#src.delay{border-color:rgba(245,165,36,.45);color:var(--acc)}
+#tvChart{height:520px}
+#tvTa{height:490px}
+#ownChart{display:none}
+.tradingview-widget-copyright{font-size:11px;line-height:1.3;padding:4px 8px 6px;color:var(--tx3)}
+.tradingview-widget-copyright a{color:var(--tx2);text-decoration:none}
+#tvChart .tradingview-widget-container,#tvChart .tradingview-widget-container__widget{height:100%;width:100%}
 .tape-in{display:inline-flex;gap:28px;padding:7px 0;animation:scroll 60s linear infinite}
 .tape:hover .tape-in{animation-play-state:paused}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -97,10 +105,11 @@ footer{padding:0 18px 30px;max-width:1500px;margin:0 auto;color:var(--tx3);font-
     <div class="logo"><i></i>BURZOVNI TERMINAL</div>
     <span class="pill" id="mkt"><span class="dot"></span><span>Učitavanje…</span></span>
     <span class="pill mono" id="upd">—</span>
+    <span class="pill" id="src"></span>
     <span class="sp"></span>
     <span class="pill warn">SIMULACIJA · NIJE FINANCIJSKI SAVJET</span>
   </div>
-  <div class="tape"><div class="tape-in mono" id="tape"></div></div>
+  <div class="tape" id="tvTape"></div>
 </header>
 
 <main>
@@ -129,7 +138,7 @@ footer{padding:0 18px 30px;max-width:1500px;margin:0 auto;color:var(--tx3);font-
     </section>
   </div>
 </main>
-<footer>Podaci: Yahoo Finance (mogu kasniti do ~15 s). Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.</footer>
+<footer id="foot">Podaci se učitavaju. Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.</footer>
 
 <div class="ov" id="ov"></div>
 <aside class="dr" id="dr">
@@ -137,10 +146,13 @@ footer{padding:0 18px 30px;max-width:1500px;margin:0 auto;color:var(--tx3);font-
   <div class="db">
     <div class="card">
       <div class="ch"><h2>Graf cijene</h2><span class="sp"></span>
-        <div class="seg" id="rng"><button data-r="1d" class="on">1D</button><button data-r="5d">5D</button><button data-r="1mo">1M</button><button data-r="6mo">6M</button><button data-r="1y">1G</button></div>
+        <div class="seg" id="cmode"><button type="button" data-m="tv" class="on">TradingView</button><button type="button" data-m="own">Naš graf</button></div>
+        <div class="seg" id="rng" style="display:none"><button data-r="1d" class="on">1D</button><button data-r="5d">5D</button><button data-r="1mo">1M</button><button data-r="6mo">6M</button><button data-r="1y">1G</button></div>
       </div>
-      <div style="padding:10px 6px 6px"><div class="chartbox"><canvas id="cv"></canvas><div class="tip mono" id="tip"></div></div></div>
+      <div id="tvChart"></div>
+      <div id="ownChart"><div class="chartbox"><canvas id="cv"></canvas><div class="tip mono" id="tip"></div></div></div>
     </div>
+    <div class="card"><div class="ch"><h2>Tehnička analiza</h2></div><div id="tvTa"></div></div>
     <div class="card"><div class="ch"><h2>O tvrtki</h2></div><div style="padding:12px 14px" id="dDesc" class="mut"></div></div>
     <div class="card"><div class="ch"><h2>Ključni pokazatelji</h2></div><div class="grid2" id="dFund"></div></div>
     <div class="card"><div class="ch"><h2 id="dErH">Zadnji izvještaj</h2></div><div id="dEr"></div></div>
@@ -183,10 +195,10 @@ function render(){
   const ms=MS[S.marketState]||[S.marketState||'—',''];
   $('#mkt').innerHTML=`<span class="dot ${ms[1]}"></span><span>${ms[0]}</span>`;
   $('#upd').textContent='Ažurirano '+tfmt(S.serverTime,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' (Zagreb)';
+  const note=S.sourceNote||'';
+  const srcEl=$('#src'); srcEl.textContent=note; srcEl.classList.toggle('delay',/Stooq|Finnhub|\+/.test(note));
+  $('#foot').textContent=(note||'Podaci: Yahoo')+'. Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.';
   const wl=S.portfolio.watchlist;
-  // tape
-  const items=wl.map(s=>{const x=q(s);if(!x)return'';return `<span class="tk" onclick="openD('${s}')"><b>${s}</b><span>${nf(x.regularMarketPrice)}</span><span class="${sgn(x.regularMarketChangePercent)}">${pct(x.regularMarketChangePercent)}</span></span>`}).join('');
-  $('#tape').innerHTML=items+items;
   // watchlist
   let rows=wl.map(s=>q(s)).filter(Boolean);
   if(sortK==='dan')rows.sort((a,b)=>b.regularMarketChangePercent-a.regularMarketChangePercent);
@@ -239,7 +251,8 @@ async function openD(s){
   cur=s;$('#ov').classList.add('on');$('#dr').classList.add('on');$('#dr').scrollTop=0;
   const inf=(S.info[s]||{});$('#dT').textContent=`${s} · ${inf.name||''}`;$('#dS').textContent='';hdr(s);
   ['#dDesc','#dFund','#dEr','#dPro','#dCon','#dNews'].forEach(k=>$(k).innerHTML='<div class="mut3" style="padding:10px 14px">Učitavanje…</div>');
-  drawChart(s,curR);
+  if(chartMode==='tv') mountAdvanced(s); else drawChart(s,curR);
+  mountTA(s);
   try{const d=await (await fetch('/api/detail?s='+s)).json(); if(cur!==s)return; fillD(s,d);}catch(e){$('#dDesc').textContent='Detalji trenutno nisu dostupni.'}
 }
 function closeD(){cur=null;$('#ov').classList.remove('on');$('#dr').classList.remove('on')}
@@ -299,9 +312,57 @@ function paint(hx){
 }
 const cvs=$('#cv');const mv=e=>{const r=cvs.getBoundingClientRect(),cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;paint(cx)};
 cvs.addEventListener('mousemove',mv);cvs.addEventListener('touchmove',mv,{passive:true});cvs.addEventListener('mouseleave',()=>paint());addEventListener('resize',()=>cur&&paint());
-setInterval(()=>{if(cur&&curR==='1d'&&S&&S.marketState==='REGULAR')drawChart(cur,'1d')},30000);
+setInterval(()=>{if(cur&&chartMode==='own'&&curR==='1d'&&S&&S.marketState==='REGULAR')drawChart(cur,'1d')},30000);
 document.querySelectorAll('#sort button').forEach(b=>b.onclick=()=>{sortK=b.dataset.k;document.querySelectorAll('#sort button').forEach(x=>x.classList.toggle('on',x===b));render()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load()});
+// hr nije na popisu jezika TradingView widgeta, pa widgeti ostaju na en.
+const TV_LOCALE='en';
+const EXCH={NVDA:'NASDAQ',MSFT:'NASDAQ',AAPL:'NASDAQ',AMZN:'NASDAQ',GOOGL:'NASDAQ',MU:'NASDAQ',ASML:'NASDAQ',LLY:'NYSE',JPM:'NYSE',V:'NYSE',XOM:'NYSE',SAP:'NYSE'};
+const tvSym=s=>(EXCH[s]||'NASDAQ')+':'+s;
+let chartMode='tv';
+function mountWidget(host,src,config,fill){
+  host.replaceChildren();
+  const box=document.createElement('div'); box.className='tradingview-widget-container'; box.style.width='100%';
+  const widget=document.createElement('div'); widget.className='tradingview-widget-container__widget'; widget.style.width='100%';
+  if(fill){box.style.height='100%'; widget.style.height='calc(100% - 28px)';}
+  const copy=document.createElement('div'); copy.className='tradingview-widget-copyright';
+  const a=document.createElement('a'); a.href='https://www.tradingview.com/'; a.target='_blank'; a.rel='noopener nofollow';
+  const span=document.createElement('span'); span.className='blue-text'; span.textContent='TradingView';
+  a.appendChild(span); copy.appendChild(a);
+  const sc=document.createElement('script'); sc.src=src; sc.async=true; sc.type='text/javascript'; sc.textContent=JSON.stringify(config);
+  box.append(widget,copy,sc); host.appendChild(box);
+}
+function mountTape(){
+  const el=$('#tvTape'); if(!el||el.dataset.ready) return; el.dataset.ready='1';
+  const symbols=['NVDA','MSFT','AAPL','AMZN','GOOGL','MU','LLY','JPM','V','XOM','ASML','SAP'].map(s=>({proName:tvSym(s),title:s}));
+  mountWidget(el,'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js',{
+    symbols,showSymbolLogo:true,colorTheme:'dark',isTransparent:true,displayMode:'adaptive',locale:TV_LOCALE
+  });
+}
+function mountAdvanced(s){
+  mountWidget($('#tvChart'),'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js',{
+    autosize:true,symbol:tvSym(s),interval:'D',timezone:'Europe/Zagreb',theme:'dark',style:'1',locale:TV_LOCALE,
+    backgroundColor:'#0d1219',gridColor:'rgba(37,48,65,0.6)',allow_symbol_change:false,calendar:false,
+    withdateranges:true,support_host:'https://www.tradingview.com'
+  },true);
+}
+function mountTA(s){
+  mountWidget($('#tvTa'),'https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js',{
+    interval:'1D',width:'100%',isTransparent:true,height:450,symbol:tvSym(s),showIntervalTabs:true,
+    displayMode:'single',locale:TV_LOCALE,colorTheme:'dark'
+  });
+}
+function setChartMode(m){
+  chartMode=m;
+  document.querySelectorAll('#cmode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  $('#tvChart').style.display=m==='tv'?'block':'none';
+  $('#ownChart').style.display=m==='own'?'block':'none';
+  $('#rng').style.display=m==='own'?'':'none';
+  if(!cur) return;
+  if(m==='tv') mountAdvanced(cur); else drawChart(cur,curR);
+}
+document.querySelectorAll('#cmode button').forEach(b=>b.onclick=()=>setChartMode(b.dataset.m));
+mountTape();
 load();
 </script>
 </body>
