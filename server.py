@@ -25,6 +25,11 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 FINNHUB_API_KEY = os.environ.get("FINNHUB_API_KEY", "").strip()
 YAHOO_BACKOFF_S = int(os.environ.get("YAHOO_BACKOFF_S", "300"))
 STOOQ_HIST_PAGES = int(os.environ.get("STOOQ_HIST_PAGES", "7"))
+UPSTREAM_TIMEOUT = float(os.environ.get("UPSTREAM_TIMEOUT", "6"))
+REFRESH_BUDGET_S = float(os.environ.get("REFRESH_BUDGET_S", "22"))
+REFRESH_EVERY_S = float(os.environ.get("REFRESH_EVERY_S", "60"))
+_snap_lock = threading.Lock()
+_snap = {"body": None}
 
 cj = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
@@ -60,11 +65,15 @@ def log(*a):
 def ttl(local, remote):
     return remote if REMOTE else local
 
-def get(url, timeout=15):
+def get(url, timeout=None):
+    if timeout is None:
+        timeout = UPSTREAM_TIMEOUT
     with opener.open(url, timeout=timeout) as r:
         return r.read()
 
-def raw_get(url, headers=None, timeout=20, data=None):
+def raw_get(url, headers=None, timeout=None, data=None):
+    if timeout is None:
+        timeout = UPSTREAM_TIMEOUT
     h = {"User-Agent": UA, "Accept": "text/html,application/json,text/csv,text/plain,*/*"}
     if headers:
         h.update(headers)
@@ -92,7 +101,7 @@ def note_yahoo_limit(exc):
 def crumb(force=False):
     with _lock:
         if force or not _crumb["v"] or time.time() - _crumb["t"] > 3600:
-            try: get("https://fc.yahoo.com", 10)
+            try: get("https://fc.yahoo.com", UPSTREAM_TIMEOUT)
             except Exception: pass  # vraca 404 ali postavi cookie
             _crumb["v"] = get("https://query1.finance.yahoo.com/v1/test/getcrumb").decode().strip()
             _crumb["t"] = time.time()
@@ -170,7 +179,7 @@ def load_pf():
     if PORTFOLIO_URL and (_remote["p"] is None or time.time() - _remote["t"] > REMOTE_TTL):
         try:
             req = urllib.request.Request(PORTFOLIO_URL + ("&" if "?" in PORTFOLIO_URL else "?") + "t=" + str(int(time.time())), headers={"User-Agent": UA, "Cache-Control": "no-cache"})
-            with urllib.request.urlopen(req, timeout=15) as r:
+            with urllib.request.urlopen(req, timeout=UPSTREAM_TIMEOUT) as r:
                 _remote["p"] = json.loads(r.read()); _remote["t"] = time.time()
                 log("portfolio.json ucitan s", PORTFOLIO_URL)
         except Exception as e:
@@ -401,20 +410,122 @@ def check_sl_tp(qs):
         if changed: save_pf(p)
         return p
 
-def state():
-    p = load_pf()
-    syms = symbols(p)
-    qs = quotes(syms)
-    try: p = check_sl_tp(qs)
-    except Exception as e: log("sl/tp greska", e)
-    try: sp = spark(syms)
-    except Exception: sp = {}
-    ms = next((q.get("marketState") for q in qs if q.get("symbol") in ("MSFT","AAPL","NVDA") and q.get("marketState")), None)
+def _info_public():
+    return {k: {"name": v["name"], "why": v["why"]} for k, v in INFO.items()}
+
+def cheap_spark(qs):
+    out = {}
+    for q in qs:
+        px = q.get("regularMarketPrice")
+        if px is None:
+            continue
+        prev = q.get("regularMarketPreviousClose")
+        base = prev if prev is not None else px
+        out[q["symbol"]] = {"c": [base, px], "prev": base}
+    return out
+
+def skeleton():
+    try:
+        p = _read_local()
+    except Exception:
+        p = {"watchlist": [], "trades": [], "cash": 0, "starting_capital": 10000}
+    syms = symbols(p) if p.get("watchlist") is not None else []
+    return {"serverTime": int(time.time()), "marketState": infer_market_state(), "sourceNote": "",
+            "loading": True, "quotes": [blank_quote(s) for s in syms], "spark": {},
+            "portfolio": p, "info": _info_public()}
+
+def _assemble(p, qs, loading):
+    ms = next((q.get("marketState") for q in qs if q.get("symbol") in ("MSFT", "AAPL", "NVDA") and q.get("marketState")), None)
     if not ms:
-        ms = next((q.get("marketState") for q in qs if q.get("marketState")), None) if qs else infer_market_state()
+        ms = infer_market_state()
     return {"serverTime": int(time.time()), "marketState": ms, "sourceNote": source_note(qs),
-            "quotes": qs, "spark": sp, "portfolio": p,
-            "info": {k: {"name": v["name"], "why": v["why"]} for k, v in INFO.items()}}
+            "loading": loading, "quotes": qs, "spark": cheap_spark(qs), "portfolio": p, "info": _info_public()}
+
+def publish(body):
+    with _snap_lock:
+        _snap["body"] = body
+
+def state():
+    with _snap_lock:
+        body = _snap["body"]
+    if not body:
+        return skeleton()
+    out = json.loads(json.dumps(body))
+    out["serverTime"] = int(time.time())
+    return out
+
+def quick_quotes(syms, deadline):
+    got = []
+    if syms and not yahoo_paused() and time.time() < deadline and os.environ.get("HANG_UPSTREAM") != "1":
+        try:
+            got = yahoo_quotes(syms)
+        except Exception as e:
+            note_yahoo_limit(e)
+            log("yahoo quotes", e)
+            got = []
+    have = {q["symbol"] for q in got if q.get("regularMarketPrice") is not None}
+    missing = [s for s in syms if s not in have]
+    if missing and FINNHUB_API_KEY and time.time() < deadline and os.environ.get("HANG_UPSTREAM") != "1":
+        try:
+            got.extend(finnhub_quotes(missing))
+        except Exception as e:
+            log("finnhub quotes", e)
+    have = {q["symbol"] for q in got if q.get("regularMarketPrice") is not None}
+    missing = [s for s in syms if s not in have]
+    if missing and time.time() < deadline:
+        try:
+            by = stooq_csv_quotes(missing)
+            got.extend(by[s] for s in missing if s in by)
+        except Exception as e:
+            log("stooq csv", e)
+    have = {q["symbol"] for q in got if q.get("regularMarketPrice") is not None}
+    for s in syms:
+        if s in have or time.time() >= deadline:
+            continue
+        try:
+            got.append(stooq_html_quote(s))
+            have.add(s)
+        except Exception as e:
+            log("stooq", s, e)
+    return _order(syms, [q for q in got if q.get("regularMarketPrice") is not None])
+
+def refresh_once():
+    try:
+        p = load_pf()
+    except Exception as e:
+        log("portfolio", e)
+        p = _read_local()
+    syms = symbols(p)
+    deadline = time.time() + REFRESH_BUDGET_S
+    t0 = time.time()
+    qs = quick_quotes(syms, deadline)
+    by = {q["symbol"]: q for q in qs}
+    full = [by.get(s) or blank_quote(s) for s in syms]
+    priced = sum(1 for q in full if q.get("regularMarketPrice") is not None)
+    if priced == 0:
+        with _snap_lock:
+            prev = _snap["body"]
+        if prev and any(q.get("regularMarketPrice") is not None for q in prev.get("quotes") or []):
+            log("osvjezavanje prazno, zadrzavam cache")
+            return
+    if priced:
+        try:
+            p = check_sl_tp(full)
+        except Exception as e:
+            log("sl/tp greska", e)
+    body = _assemble(p, full, priced < len(syms))
+    publish(body)
+    log("osvjezeno", body["sourceNote"] or "nema", priced, "/", len(syms), "za", round(time.time() - t0, 1), "s")
+
+def refresh_loop():
+    while True:
+        t0 = time.time()
+        try:
+            refresh_once()
+        except Exception as e:
+            log("refresh", e)
+        rest = REFRESH_EVERY_S - (time.time() - t0)
+        time.sleep(rest if rest > 5 else 5)
 
 # ---- Finnhub (samo uz FINNHUB_API_KEY) ----
 def finnhub_get(path):
@@ -525,7 +636,7 @@ def _stooq_reset():
 def _stooq_conn_get():
     global _stooq_conn
     if _stooq_conn is None:
-        _stooq_conn = http.client.HTTPSConnection("stooq.com", timeout=25, context=ssl.create_default_context())
+        _stooq_conn = http.client.HTTPSConnection("stooq.com", timeout=UPSTREAM_TIMEOUT, context=ssl.create_default_context())
     return _stooq_conn
 
 def _stooq_req(method, path, body=None, extra=None):
@@ -535,7 +646,7 @@ def _stooq_req(method, path, body=None, extra=None):
     if extra:
         headers.update(extra)
     err = None
-    for _attempt in range(2):
+    for _attempt in range(1):
         conn = _stooq_conn_get()
         try:
             conn.request(method, path, body=body, headers=headers)
@@ -572,6 +683,9 @@ def _stooq_good(code, body):
     return code == 200 and body and not _is_challenge(body) and not _is_denied(body)
 
 def stooq_fetch(path):
+    if os.environ.get("HANG_UPSTREAM") == "1":
+        time.sleep(30)
+        raise TimeoutError("hang")
     with _stooq_lock:
         code, body, _hdrs = _stooq_req("GET", path)
         if code == 404:
@@ -752,7 +866,7 @@ def stooq_csv_quotes(syms):
     global _stooq_csv_quote_off
     if _stooq_csv_quote_off:
         return {}
-    path = "/q/l/?s=%s&f=sd2t2ohlcvn&h&e=csv" % "+".join(stooq_symbol(s) for s in syms)
+    path = "/q/l/?s=%s&f=sd2t2ohlcv&h&e=csv" % "+".join(stooq_symbol(s) for s in syms)
     try:
         body = stooq_fetch(path)
     except FileNotFoundError:
@@ -815,11 +929,6 @@ def stooq_quotes(syms):
                 by[s] = stooq_html_quote(s)
             except Exception as e2:
                 log("stooq retry", s, e2)
-    for s in list(by):
-        try:
-            enrich_quote(by[s], stooq_daily(s))
-        except Exception as e:
-            log("stooq hist", s, e)
     return [by[s] for s in syms if s in by]
 
 def bars_to_chart(sym, rng, bars):
@@ -999,20 +1108,7 @@ class H(BaseHTTPRequestHandler):
             log("handler", u.path, e); traceback.print_exc()
             self.send(502, {"error": str(e)})
 
-def bg_loop():
-    # SL/TP se provjerava i kad nitko nema otvorenu stranicu
-    while True:
-        try:
-            p = load_pf()
-            if any(t.get("status") == "open" for t in p.get("trades", [])):
-                qs = quotes(symbols(p)); check_sl_tp(qs)
-                ms = qs[0].get("marketState") if qs else None
-                time.sleep(15 if ms == "REGULAR" else 120)
-            else: time.sleep(120)
-        except Exception as e:
-            log("bg", e); time.sleep(60)
-
 if __name__ == "__main__":
-    threading.Thread(target=bg_loop, daemon=True).start()
+    threading.Thread(target=refresh_loop, daemon=True).start()
     log("Server na portu", PORT, "| portfolio:", PORTFOLIO_URL or PORTFOLIO, "| nacin:", "remote (samo memorija)" if REMOTE else "lokalno (zapisuje portfolio.json)")
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

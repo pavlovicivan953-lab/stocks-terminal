@@ -180,7 +180,7 @@ async function load(){
   try{
     const r=await fetch('/api/state',{cache:'no-store'}); if(!r.ok) throw 0; S=await r.json(); render();
   }catch(e){ $('#upd').textContent='Greška pri osvježavanju – pokušavam ponovno'; }
-  clearTimeout(timer); timer=setTimeout(load, S&&S.marketState==='REGULAR'?12000:60000);
+  clearTimeout(timer); timer=setTimeout(load, !S||S.loading?15000:20000);
 }
 function q(sym){return S.quotes.find(x=>x.symbol===sym)}
 function spark(c,prevc,w=96,h=30){
@@ -195,23 +195,25 @@ function render(){
   const ms=MS[S.marketState]||[S.marketState||'—',''];
   $('#mkt').innerHTML=`<span class="dot ${ms[1]}"></span><span>${ms[0]}</span>`;
   $('#upd').textContent='Ažurirano '+tfmt(S.serverTime,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' (Zagreb)';
-  const note=S.sourceNote||'';
-  const srcEl=$('#src'); srcEl.textContent=note; srcEl.classList.toggle('delay',/Stooq|Finnhub|\+/.test(note));
-  $('#foot').textContent=(note||'Podaci: Yahoo')+'. Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.';
-  const wl=S.portfolio.watchlist;
+  const note=S.loading&&!S.sourceNote?'Učitavanje cijena…':(S.sourceNote||'');
+  const srcEl=$('#src'); srcEl.textContent=note; srcEl.classList.toggle('delay',/Stooq|Finnhub|Učitavanje|\+/.test(note));
+  $('#foot').textContent=(S.sourceNote||(S.loading?'Učitavanje cijena…':'Podaci: Yahoo'))+'. Sažeci izvještaja: priopćenja tvrtki, CNBC, Reuters. Sve cijene u USD; ASML i SAP su ADR-ovi.';
+  const wl=S.portfolio.watchlist||[];
   // watchlist
-  let rows=wl.map(s=>q(s)).filter(Boolean);
-  if(sortK==='dan')rows.sort((a,b)=>b.regularMarketChangePercent-a.regularMarketChangePercent);
+  let rows=wl.map(s=>q(s)||{symbol:s});
+  const numOr=(v,d)=>v==null||isNaN(v)?d:v;
+  if(sortK==='dan')rows.sort((a,b)=>numOr(b.regularMarketChangePercent,-1e9)-numOr(a.regularMarketChangePercent,-1e9));
   if(sortK==='pe')rows.sort((a,b)=>(a.trailingPE||1e9)-(b.trailingPE||1e9));
-  if(sortK==='vrh')rows.sort((a,b)=>a.regularMarketPrice/a.fiftyTwoWeekHigh-b.regularMarketPrice/b.fiftyTwoWeekHigh);
+  if(sortK==='vrh')rows.sort((a,b)=>numOr(a.fiftyTwoWeekHigh?a.regularMarketPrice/a.fiftyTwoWeekHigh:null,1e9)-numOr(b.fiftyTwoWeekHigh?b.regularMarketPrice/b.fiftyTwoWeekHigh:null,1e9));
   $('#wl').innerHTML=rows.map(x=>{
-    const s=x.symbol,inf=S.info[s]||{},sp=S.spark[s]||{},pos=(x.regularMarketPrice-x.fiftyTwoWeekLow)/(x.fiftyTwoWeekHigh-x.fiftyTwoWeekLow)*100;
+    const s=x.symbol,inf=S.info[s]||{},sp=S.spark[s]||{};
+    const span=x.regularMarketPrice!=null&&x.fiftyTwoWeekHigh!=null&&x.fiftyTwoWeekLow!=null&&x.fiftyTwoWeekHigh!==x.fiftyTwoWeekLow?(x.regularMarketPrice-x.fiftyTwoWeekLow)/(x.fiftyTwoWeekHigh-x.fiftyTwoWeekLow)*100:null;
     const ch=x.regularMarketChangePercent;
     return `<tr><td class="sym"><b>${s}</b><span>${inf.name||x.shortName||''}</span></td>
     <td class="hide-s">${spark(sp.c,sp.prev)}</td>
     <td class="mono"><span class="px" id="px-${s}">${nf(x.regularMarketPrice)}</span></td>
     <td class="mono"><span class="chg ${sgn(ch)}">${pct(ch)}</span></td>
-    <td class="hide-s"><span class="rng" title="${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}"><i style="left:${Math.max(0,Math.min(100,pos))}%"></i></span></td>
+    <td class="hide-s"><span class="rng" title="${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}"><i style="left:${span==null?0:Math.max(0,Math.min(100,span))}%"></i></span></td>
     <td class="mono hide-s">${x.trailingPE?nf(x.trailingPE,1):'—'}</td>
     <td class="mono hide-s">${cap(x.marketCap)}</td>
     <td><button class="btn" onclick="openD('${s}')">Detalji</button></td></tr>`}).join('');
@@ -223,13 +225,13 @@ function render(){
 function renderPf(){
   const P=S.portfolio,T=P.trades||[],open=T.filter(t=>t.status==='open'),closed=T.filter(t=>t.status==='closed');
   let mv=0,upl=0;
-  open.forEach(t=>{const x=q(t.ticker),px=x?x.regularMarketPrice:t.entry_price;mv+=px*t.shares;upl+=(px-t.entry_price)*t.shares});
+  open.forEach(t=>{const x=q(t.ticker),px=x&&x.regularMarketPrice!=null?x.regularMarketPrice:t.entry_price;mv+=px*t.shares;upl+=(px-t.entry_price)*t.shares});
   const rpl=closed.reduce((a,t)=>a+(t.pnl_usd||0),0),tot=P.cash+mv,start=P.starting_capital||10000;
   $('#kpis').innerHTML=[['Ukupna vrijednost',`<span class="mono">${usd(tot)}</span> <small class="${sgn(tot-start)}" style="display:inline;font-size:12px">${pct((tot/start-1)*100)}</small>`],
    ['Gotovina',`<span class="mono">${usd(P.cash)}</span>`],['Otvoreni P&L',`<span class="mono ${sgn(upl)}">${upl>=0?'+':''}${usd(upl)}</span>`],['Realizirani P&L',`<span class="mono ${sgn(rpl)}">${rpl>=0?'+':''}${usd(rpl)}</span>`]]
    .map(k=>`<div class="kpi"><small>${k[0]}</small><div>${k[1]}</div></div>`).join('');
   $('#pos').innerHTML=open.length?open.map(t=>{
-    const x=q(t.ticker),px=x?x.regularMarketPrice:t.entry_price,pl=(px-t.entry_price)*t.shares,plp=(px/t.entry_price-1)*100;
+    const x=q(t.ticker),px=x&&x.regularMarketPrice!=null?x.regularMarketPrice:t.entry_price,pl=(px-t.entry_price)*t.shares,plp=(px/t.entry_price-1)*100;
     const rg=t.take_profit-t.stop_loss,at=Math.max(0,Math.min(100,(px-t.stop_loss)/rg*100)),en=(t.entry_price-t.stop_loss)/rg*100;
     return `<div class="pos"><div class="pos-h"><b>${t.ticker}</b><span class="mut">Long · ${t.shares} kom. @ ${nf(t.entry_price)}</span><span class="sp"></span>
       <span class="mono ${sgn(pl)}" style="font-weight:600">${pl>=0?'+':''}${usd(pl)} (${pct(plp)})</span></div>
@@ -246,7 +248,7 @@ function renderPf(){
   $('#weekly').innerHTML=html;
 }
 // ---- detail drawer ----
-function hdr(s){const x=q(s);if(!x)return;$('#dP').textContent=nf(x.regularMarketPrice);const c=x.regularMarketChangePercent;$('#dC').innerHTML=`<span class="${sgn(c)}">${x.regularMarketChange>0?'+':''}${nf(x.regularMarketChange)} (${pct(c)})</span>`;}
+function hdr(s){const x=q(s);if(!x)return;$('#dP').textContent=nf(x.regularMarketPrice);const c=x.regularMarketChangePercent;if(x.regularMarketPrice==null){$('#dC').textContent='';return}$('#dC').innerHTML=`<span class="${sgn(c)}">${x.regularMarketChange>0?'+':''}${nf(x.regularMarketChange)} (${pct(c)})</span>`;}
 async function openD(s){
   cur=s;$('#ov').classList.add('on');$('#dr').classList.add('on');$('#dr').scrollTop=0;
   const inf=(S.info[s]||{});$('#dT').textContent=`${s} · ${inf.name||''}`;$('#dS').textContent='';hdr(s);
@@ -263,11 +265,11 @@ function fillD(s,d){
   $('#dDesc').innerHTML=(I.desc||'')+(I.why?`<div style="margin-top:8px;color:var(--acc)">▸ ${I.why}</div>`:'');
   const big=v=>v==null?'—':Math.abs(v)>=1e12?nf(v/1e12,2)+' bil.':nf(v/1e9,1)+' mlrd.';
   const f=[['Tržišna kap.',cap(x.marketCap)],['P/E',x.trailingPE?nf(x.trailingPE,1):'—'],['Fwd P/E',x.forwardPE?nf(x.forwardPE,1):'—'],['EPS (12 mj.)',usd(x.epsTrailingTwelveMonths)],
-   ['Raspon dana',`${nf(x.regularMarketDayLow)} – ${nf(x.regularMarketDayHigh)}`],['52 tjedna',`${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}`],['Od 52-tj. vrha',pct((x.regularMarketPrice/x.fiftyTwoWeekHigh-1)*100)],
+   ['Raspon dana',`${nf(x.regularMarketDayLow)} – ${nf(x.regularMarketDayHigh)}`],['52 tjedna',`${nf(x.fiftyTwoWeekLow)} – ${nf(x.fiftyTwoWeekHigh)}`],['Od 52-tj. vrha',x.regularMarketPrice&&x.fiftyTwoWeekHigh?pct((x.regularMarketPrice/x.fiftyTwoWeekHigh-1)*100):'—'],
    ['SMA50 / SMA200',`${nf(x.fiftyDayAverage)} / ${nf(x.twoHundredDayAverage)}`],['Prihod (12 mj.)',big(F.revenue)+' '+fc],['Rast prihoda',F.revenueGrowth!=null?pct(F.revenueGrowth*100):'—'],
    ['Bruto marža',F.grossMargins?nf(F.grossMargins*100,1)+'%':'—'],['Operativna marža',F.operatingMargins!=null?nf(F.operatingMargins*100,1)+'%':'—'],['Neto marža',F.profitMargins!=null?nf(F.profitMargins*100,1)+'%':'—'],
    ['ROE',F.roe!=null?nf(F.roe*100,1)+'%':'—'],['Beta',F.beta!=null?nf(F.beta,2):'—'],['Dividenda',F.dividendYield?nf(F.dividendYield*100,2)+'%':'—'],
-   ['Cilj analitičara',F.targetMeanPrice?`${usd(F.targetMeanPrice)} (${pct((F.targetMeanPrice/x.regularMarketPrice-1)*100)})`:'—'],['Preporuka',F.recommendationKey?`${F.recommendationKey.replace('_',' ')} · ${F.analysts||'?'} anal.`:'—'],
+   ['Cilj analitičara',F.targetMeanPrice&&x.regularMarketPrice?`${usd(F.targetMeanPrice)} (${pct((F.targetMeanPrice/x.regularMarketPrice-1)*100)})`:'—'],['Preporuka',F.recommendationKey?`${F.recommendationKey.replace('_',' ')} · ${F.analysts||'?'} anal.`:'—'],
    ['Volumen',x.regularMarketVolume?nf(x.regularMarketVolume/1e6,1)+' mil.':'—']];
   $('#dFund').innerHTML=f.map(a=>`<div class="f"><small>${a[0]}</small><b class="mono">${a[1]}</b></div>`).join('');
   const er=I.er;
